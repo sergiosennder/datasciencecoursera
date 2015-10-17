@@ -1,0 +1,43 @@
+pollutantmean <- function(directory, pollutant, id = 1:332) {
+    #====== CalculatePollutantMean =========================================
+    calculatePollutantMean <- function(directory, pollutant, id) {
+        # generate file path by reading the file number (e.g. "23"),
+        # splitting the number into characters (e.g. "2", "3"), 
+        # appending front-end zeroes (e.g. "0", "0", "2", "3"), 
+        # and utilizing last three chars for file path name (e.g. "023").
+        adjusted_id <- strsplit(id, split=vector(length=0))[[1]]
+        adjusted_id<- tail(c("0", "0", adjusted_id), 3)
+        id_str <- gsub(", ", "", toString(adjusted_id))
+        pollutant_file <- paste(directory,"/",id_str,".csv", sep="")
+        print(paste("Reading ",pollutant_file, sep=""))
+        
+        file_data <- read.csv(pollutant_file)
+        
+        pollutant_data <- select(file_data, matches(pollutant))
+        pollutant_data <- pollutant_data[!is.na(pollutant_data)]
+        sum_n_rows <- c(0,0)
+        sum_n_rows[1] <- sum(pollutant_data)
+        sum_n_rows[2] <- length(pollutant_data)
+        print(paste("file sum = ", sum_n_rows[1], sep=""))
+        print(paste("file num of rows = ", sum_n_rows[2], sep=""))
+        return (sum_n_rows)
+    }
+    
+    #====== pollutantmean =========================================
+    # Loop through all files specified in 'id', calculate mean for each
+    # file/pollutant, and add means to total mean_sum.
+    sum_n_rows <- c(0, 0)
+
+    for (cur_id in id) {
+       sum_n_rows <- sum_n_rows + 
+           calculatePollutantMean(directory, pollutant, as.character(cur_id))
+       print(paste("Accumulated sum = ", sum_n_rows[1], sep=""))
+       print(paste("Accumulated num of rows = ", sum_n_rows[2], sep=""))
+    }
+    
+    mean <- sum_n_rows[1] / sum_n_rows[2]
+    print(paste("final sum = ", sum_n_rows[1], sep=""))
+    print(paste("final number of rows = ", sum_n_rows[2], sep=""))
+    print(paste("mean = ", mean, sep=""))
+    return(mean)
+}
